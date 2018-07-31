@@ -1,0 +1,274 @@
+
+Input 
+
+val a = sc.parallelize(List("dog", "tiger", "lion", "cat", "panther", "eagle"))
+
+Output 
+
+Array((4,lion), (5,tigereagle), (3,dogcat), (7,panther))
+
+Solution 
+
+val b = a.map(x => (x.length, x)).reduceByKey(_+_)
+
+==============================
+
+Input 
+
+val a = sc.parallelize(List( ("Deeapak" , "male", 4000), ("Deepak" , "male", 2000), ("Deepika" , "female",2000), ("Deepak" , "female", 2000), ("Deepak" , "male", 1000) , ("Neeta" , "female", 2000)))
+
+Output
+
+Array(((Deeapak,male),4000), ((Deepak,female),2000), ((Neeta,female),2000), ((Deepak,male),3000), ((Deepika,female),2000))
+
+Solution
+
+val b = a.map(row => ((row._1,row._2),row._3)).reduceByKey(_+_)
+
+
+
+================================
+
+Problem Scenario 39 : You have been given two files
+spark16/file1.txt
+1,9,5
+2,7,4
+3,8,3
+spark16/file2.txt
+1,g,h
+2,i,j
+3,k,l
+Load these two tiles as Spark RDD and join them to produce the below results
+(l,((9,5),(g,h)))
+(2, ((7,4), (i,j))) (3, ((8,3), (k,l)))
+And write code snippet which will sum the second columns of above joined results (5+4+3).
+
+
+
+Solution
+
+val t1 = sc.textFile("Data/file1.txt")
+val f1 = t1.map(row => {
+val s = row.split(",");
+(s(0).toInt,(s(1).toInt,s(2).toInt))
+})
+
+
+val t2 = sc.textFile("Data/file2.txt")
+
+val f2 = t2.map(row => {
+val s = row.split(",");
+(s(0).toInt,(s(1),s(2)))
+})
+
+val r1 = f1.join(f2);
+
+val r2 = r1.map( row => row._2._1._2).reduce(_+_)
+
+=======================================
+
+Problem Scenario GG : You have been given below code snippet.
+val a = sc.parallelize(List("dog", "tiger", "lion", "cat", "spider", "eagle"), 2)
+val b = a.keyBy(_.length)
+val c = sc.parallelize(List("ant", "falcon", "squid"), 2)
+val d = c.keyBy(.length)
+operation 1
+Write a correct code snippet for operationl which will produce desired output, shown below.
+Array[(lnt, String)] = Array((4,lion))
+
+
+Solution
+
+ val e = b.subtractByKey(d)
+
+
+========================================
+
+Problem Scenario 70 : Write down a Spark Application using Python, In which it read a
+file "Content.txt" (On hdfs) with following content. Do the word count and save the
+results in a directory called "problem85" (On hdfs)
+Content.txt
+Hello this is ABCTECH.com
+This is XYZTECH.com
+Apache Spark Training
+This is Spark Learning Session
+Spark is faster than MapReduce
+
+Solution:
+
+
+ val y = c.flatMap(row => row.split(" "))
+
+
+ =================================
+
+Problem Scenario 93 : You have to run your Spark application with locally 8 thread or
+locally on 8 cores. Replace XXX with correct values.
+
+spark-submit --class com.hadoopexam.MyTask XXX -deploy-mode cluster SSPARK_HOME/lib/hadoopexam.jar 10
+
+not yet found 
+=============================
+
+Problem Scenario 80 : You have been given MySQL DB with following details.
+user=retail_dba
+password=cloudera
+database=retail_db
+table=retail_db.products
+jdbc URL = jdbc:mysql://quickstart:3306/retail_db
+Columns of products table : (product_id | product_category_id | product_name |
+product_description | product_price | product_image )
+
+Please accomplish following activities.
+1. Copy "retaildb.products" table to hdfs in a directory p93_products
+2. Now sort the products data sorted by product price per category, use productcategoryid
+colunm to group by category
+
+
+
+sqoop import --connect jdbc:mysql://quickstart:3306/retail_db --username retail_dba --password cloudera --table products --target-dir p93_products
+
+val product_data = sc.textFile("p93_products/");
+
+val product_data_map = product_data.map(row => {
+val temp = row.split(",");
+val x = temp(0)
+val y = temp(1)
+val z = temp(2)
+val a = (temp(3).length > 0)? temp(3):null
+val b = temp(4)
+val c = temp(5)
+(x,y,z,a,b,c)
+})
+
+val typed = product_data_map.map(row => row._1.toInt,row._2.toInt,row._5.toDouble)
+
+
+not yet solved
+
+======================
+
+Problem Scenario 31 : You have given following two files
+1. Content.txt: Contain a huge text file containing space separated words.
+2. Remove.txt: Ignore/filter all the words given in this file (Comma Separated).
+Write a Spark program which reads the Content.txt file and load as an RDD, remove all the
+words from a broadcast variables (which is loaded as an RDD of words from Remove.txt).
+And count the occurrence of the each word and save it as a text file in HDFS.
+
+
+Content.txt
+Hello this is ABCTech.com
+This is TechABY.com
+Apache Spark Training
+This is Spark Learning Session
+Spark is faster than MapReduce
+
+
+Remove.txt
+Hello, is, this, the
+
+
+Solution:
+
+val content = sc.textFile("problem-31/content.txt")
+val cleaned_content = content.flatMap(line => line.split(" "))
+
+
+val remove = sc.textFile("problem-31/remove.txt")
+val removeRDD = remove.flatMap(line => line.split(",")).map(word => word.trim)
+
+
+val broadcastVar = sc.broadcast(remove.collect)
+
+ val result = cleaned_content.filter(word => !broadcastVar.value.contains(word.trim))
+
+
+val w_count = result.map(word => (word,1)).reduceByKey(_+_)
+
+====================================================================
+
+Problem Scenario 45 : You have been given 2 files , with the content as given Below
+(spark12/technology.txt)
+(spark12/salary.txt)
+(spark12/technology.txt)
+first,last,technology
+Amit,Jain,java
+Lokesh,kumar,unix
+Mithun,kale,spark
+Rajni,vekat,hadoop
+Rahul,Yadav,scala
+(spark12/salary.txt)
+first,last,salary
+Amit,Jain,100000
+Lokesh,kumar,95000
+Mithun,kale,150000
+Rajni,vekat,154000
+Rahul,Yadav,120000
+Write a Spark program, which will join the data based on first and last name and save the
+joined results in following format, first Last.technology.salary
+
+val technology = sc.textFile("spark12/technology.txt")
+val technology_header = technology.first()
+val technology_removed_header_data = technology.filter(row => !row.contains(technology_header) )
+technology_removed_header_data.collect
+val technology_tupple_map = technology_removed_header_data.map(row =>{
+val temp = row.split(",")
+(temp(0)+temp(1),temp(2))
+})
+technology_tupple_map.collect
+
+
+
+val salary = sc.textFile("spark12/salary.txt")
+val salary_header = salary.first()
+val salary_removed_header_data = salary.filter(row => !row.contains(salary_header) )
+salary_removed_header_data.collect
+val salary_tupple_map = salary_removed_header_data.map(row =>{
+val temp = row.split(",")
+(temp(0)+temp(1),temp(2))
+})
+salary_tupple_map.collect
+
+val tech_salary_join = technology_tupple_map.join(salary_tupple_map)
+
+val result = tech_salary_join.map(row => (row._1+"."+row._2._1+"."+row._2._2))
+result.collect 
+
+========================================================================
+
+
+Please accomplish following.
+1. Create a table in retailedb with following definition.
+CREATE table departments_new (department_id int(11), department_name varchar(45),
+created_date T1MESTAMP DEFAULT NOW());
+2. Now isert records from departments table to departments_new
+3. Now import data from departments_new table to hdfs.
+4. Insert following 5 records in departmentsnew table. Insert into departments_new
+values(110, "Civil" , null); Insert into departments_new values(111, "Mechanical" , null);
+Insert into departments_new values(112, "Automobile" , null); Insert into departments_new
+values(113, "Pharma" , null);
+Insert into departments_new values(114, "Social Engineering" , null);
+5. Now do the incremental import based on created_date column.
+
+
+Solution
+
+mysql -u retail_dba -p cloudera
+
+CREATE table departments_new (department_id int(11), department_name varchar(45), created_date TIMESTAMP DEFAULT NOW());
+desc departments_new;
+
+insert into departments_new select a.*,null from departments a;
+
+sqoop import --connect jdbc:mysql://quickstart:3306/retail_db --username retail_dba --password cloudera --table departments_new --target-dir departments_new --split-by department_id
+
+Insert into departments_new values(110, "Civil" , null);
+Insert into departments_new values(111, "Mechanical" , null);
+Insert into departments_new values(112, "Automobile" , null);
+Insert into departments_new values(113, "Pharma" , null);
+Insert into departments_new values(114, "Social Engineering" , null);
+
+sqoop import --connect jdbc:mysql://quickstart:3306/retail_db --username retail_dba --password cloudera --table departments_new --target-dir departments_new --append --check-column created_date --incremental lastmodified --last-value "2018-07-31 06:14:40" -m 1
+
+
+===========================================================
