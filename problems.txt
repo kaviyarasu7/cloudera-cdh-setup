@@ -132,11 +132,11 @@ val product_data = sc.textFile("p93_products/");
 
 val product_data_map = product_data.map(row => {
 val temp = row.split(",");
-val x = temp(0)
-val y = temp(1)
+val x = temp(0).toInt
+val y = temp(1).toInt
 val z = temp(2)
-val a = (temp(3).length > 0)? temp(3):null
-val b = temp(4)
+val a = temp(3)
+val b = temp(4).toDouble
 val c = temp(5)
 (x,y,z,a,b,c)
 })

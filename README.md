@@ -11,7 +11,15 @@ docker run --hostname=quickstart.cloudera --privileged=true -t -i -d --name cdh 
 
 docker exec -it cdh bash
 
+sudo /home/cloudera/cloudera-manager --express --force
 
 #### Remove all stoped continers 
 
 docker ps -aq --no-trunc -f status=exited | xargs docker rm
+
+
+
+#### Spark-shell permission issue for root user ?
+
+sudo -u hdfs hadoop fs -chmod 777 /user/spark
+sudo -u spark hadoop fs -chmod 777 /user/spark/applicationHistory
